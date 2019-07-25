@@ -23,6 +23,8 @@ class CPU:
         self.branchtable[int(0b10000010)] = self.handle_LDI
         self.branchtable[int(0b01000110)] = self.pop_it_like_its_hot
         self.branchtable[int(0b01000101)] = self.push_it_real_good
+        self.branchtable[int(0b01010000)] = self.call
+        self.branchtable[int(0b00010001)] = self.ret
 
     # ***************** Dispatcher functions ****************** #
     # ******** ALU functions ****** #
@@ -67,14 +69,22 @@ class CPU:
     def dispatch(self, IR, opA, opB):
         self.branchtable[IR](opA, opB)
 
+    # ***************** CALL & RET FUNCTIONS ****************** #
+    def call(self, operand_a, operand_b):
+        self.ram[self.register[7]] = self.pc + 2
+        self.register[7] -= 1
+        self.pc = self.register[operand_a]
 
+    def ret(self, operand_a, operand_b):
+        self.register[7] += 1
+        self.pc = self.ram[self.register[7]]
 
     # ***************** Load program ****************** #
     def load(self):
         """Load a program into memory."""
 
         if len(sys.argv) is not 2:
-            print(f"usage: {sys.argv[0]} <filename>")
+            # print(f"usage: {sys.argv[0]} <filename>")
             sys.exit(1)
 
         try:
@@ -96,7 +106,7 @@ class CPU:
             print(self.ram)
 
         except FileNotFoundError:
-            print(f"{sys.argv[0]}: {sys.argv[1]} not found")
+            # print(f"{sys.argv[0]}: {sys.argv[1]} not found")
             sys.exit(2)
 
 
@@ -155,9 +165,9 @@ class CPU:
                 print("HALT")
                 running = False
             else:
-                print(self.ram[IR])
-                print(operand_a)
-                print(operand_b)
+                # print(self.ram[IR])
+                # print(operand_a)
+                # print(operand_b)
                 print()
                 self.dispatch(self.ram[IR], operand_a, operand_b)
 
